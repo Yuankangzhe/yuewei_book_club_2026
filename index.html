@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>阅微书社毕业纪念网站</title>
+<!--
+  光标来源（CC0 可商用）：
+  - 默认箭头：Kenney « Cursor Pixel Pack » https://kenney.nl/assets/cursor-pixel-pack
+  - 点击手型：OpenGameArt « Hand cursor » https://opengameart.org/content/hand-cursor
+-->
+<link rel="icon" href="pixel-cursor.png" type="image/png"/>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+@font-face{
+    font-family:"汇文明朝体";
+    src:url("汇文明朝体.otf") format("opentype");
+    font-display:swap;
+}
+
+:root{
+    --cursor-pixel:url("pixel-cursor.png?v=2") 0 0, auto;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    cursor:var(--cursor-pixel);
+}
+
+body{
+    overflow:hidden;
+    font-family:"Microsoft YaHei",sans-serif;
+    background:#111;
+}
+
+.page{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.bg-image{
+    position:absolute;
+    inset:0;
+    background-image:url('background.jpg');
+    background-size:cover;
+    background-position:center;
+    background-repeat:no-repeat;
+}
+
+.blur-bg{
+    filter:blur(12px) brightness(0.7);
+    transform:scale(1.1);
+}
+
+.overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(60,30,0,0.28);
+}
+
+.person-btn{
+    position:absolute;
+    width:72px;
+    height:96px;
+    transform:translate(-50%, -50%);
+    border:none;
+    background:transparent;
+    z-index:30;
+    padding:0;
+}
+
+/* —— 像素风姓名气泡（Cozy 8-bit RPG 对话框） —— */
+.pixel-name-tag{
+    position:absolute;
+    left:50%;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    z-index:50;
+    transition:
+        opacity 0.2s steps(5),
+        transform 0.24s ease,
+        visibility 0.24s;
+    image-rendering:pixelated;
+}
+
+/* 后排：对话框在热区上方，不挡前排 */
+.person-btn--back .pixel-name-tag{
+    bottom:calc(100% + 14px);
+    top:auto;
+    transform:translateX(-50%) translateY(12px) scale(0.94);
+}
+
+.person-btn--back:hover .pixel-name-tag,
+.person-btn--back:focus-visible .pixel-name-tag{
+    opacity:1;
+    visibility:visible;
+    transform:translateX(-50%) translateY(0) scale(1);
+    animation:pixel-tag-float-up 2.2s steps(2) infinite;
+}
+
+/* 前排：对话框在热区下方（胸口/膝上），不挡后排 */
+.person-btn--front .pixel-name-tag{
+    bottom:auto;
+    top:calc(100% + 10px);
+    transform:translateX(-50%) translateY(-10px) scale(0.94);
+}
+
+.person-btn--front:hover .pixel-name-tag,
+.person-btn--front:focus-visible .pixel-name-tag{
+    opacity:1;
+    visibility:visible;
+    transform:translateX(-50%) translateY(0) scale(1);
+    animation:pixel-tag-float-down 2.2s steps(2) infinite;
+}
+
+@keyframes pixel-tag-float-up{
+    0%,100%{ transform:translateX(-50%) translateY(0) scale(1); }
+    50%{ transform:translateX(-50%) translateY(-5px) scale(1); }
+}
+
+@keyframes pixel-tag-float-down{
+    0%,100%{ transform:translateX(-50%) translateY(0) scale(1); }
+    50%{ transform:translateX(-50%) translateY(4px) scale(1); }
+}
+
+/* 硬阴影层（像素块偏移，无模糊） */
+.pixel-name-tag__wrap{
+    position:relative;
+    display:inline-block;
+}
+
+.pixel-name-tag__shadow{
+    position:absolute;
+    inset:0;
+    background:#2a1810;
+    transform:translate(5px, 5px);
+    z-index:0;
+}
+
+/* 外框 + 内胆 */
+.pixel-name-tag__box{
+    position:relative;
+    z-index:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-width:88px;
+    padding:10px 18px 12px;
+    background:#fff5dc;
+    border:4px solid #4a3220;
+    box-shadow:
+        inset 0 3px 0 0 #fffef5,
+        inset 0 -3px 0 0 #e8cf9a,
+        inset 3px 0 0 0 #ffecc8,
+        inset -3px 0 0 0 #d4b88a;
+}
+
+/* 内层双线装饰框 */
+.pixel-name-tag__box::before{
+    content:"";
+    position:absolute;
+    inset:5px;
+    border:2px solid #c9a86c;
+    pointer-events:none;
+}
+
+/* 底部像素小三角（指向上方热区，后排默认） */
+.person-btn--back .pixel-name-tag__box::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    bottom:-10px;
+    width:10px;
+    height:10px;
+    transform:translateX(-50%);
+    background:#fff5dc;
+    border-right:4px solid #4a3220;
+    border-bottom:4px solid #4a3220;
+    box-shadow:3px 3px 0 0 #2a1810;
+}
+
+/* 前排：三角在框顶，指向人脸 */
+.person-btn--front .pixel-name-tag__box::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:-10px;
+    bottom:auto;
+    width:10px;
+    height:10px;
+    transform:translateX(-50%);
+    background:#fff5dc;
+    border-left:4px solid #4a3220;
+    border-top:4px solid #4a3220;
+    border-right:none;
+    border-bottom:none;
+    box-shadow:-2px -2px 0 0 #2a1810;
+}
+
+.pixel-name-tag__text{
+    position:relative;
+    z-index:2;
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:20px;
+    font-weight:normal;
+    line-height:1.35;
+    letter-spacing:3px;
+    color:#3b2618;
+    text-align:center;
+    white-space:nowrap;
+    text-shadow:1px 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.people-layer{
+    position:absolute;
+    inset:0;
+    z-index:25;
+    pointer-events:none;
+}
+
+.person-btn--back{
+    width:64px;
+    height:108px;
+}
+
+.person-btn--front{
+    width:78px;
+    height:92px;
+}
+
+.people-layer .person-btn{
+    pointer-events:auto;
+}
+
+.side-menu{
+    position:absolute;
+    top:50%;
+    right:-190px;
+    transform:translateY(-50%);
+    transition:0.45s;
+    z-index:50;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+}
+
+.side-menu.show{
+    right:25px;
+}
+
+.menu-btn{
+    width:auto;
+    min-width:148px;
+    padding:12px 18px;
+    margin:10px 0;
+    border:4px solid #4a3220;
+    border-radius:0;
+    background:#fff5dc;
+    backdrop-filter:none;
+    color:#3b2618;
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:16px;
+    letter-spacing:3px;
+    box-shadow:5px 5px 0 rgba(42,24,16,0.88);
+    transition:transform 0.12s steps(2), box-shadow 0.12s steps(2), background 0.12s steps(2);
+    image-rendering:pixelated;
+}
+
+.menu-btn:hover{
+    transform:translate(-5px, -2px);
+    background:#ffd875;
+    box-shadow:7px 7px 0 rgba(42,24,16,0.88);
+}
+
+.menu-btn:active{
+    transform:translate(2px, 2px);
+    box-shadow:3px 3px 0 rgba(42,24,16,0.88);
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.62);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:200;
+    perspective:1400px;
+}
+
+.modal-stage{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+    max-width:96vw;
+}
+
+/* 纪念册底图 jiniance(new).png · 830×623 */
+.jiniance-book{
+    position:relative;
+    width:min(1040px, 96vw);
+    aspect-ratio:830 / 623;
+    background:url("jiniance(new).png") center / 100% 100% no-repeat;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+    transform-origin:left center;
+    transform:perspective(1400px) rotateY(-86deg) scale(0.9);
+    opacity:0;
+    box-shadow:-12px 8px 0 rgba(0,0,0,0.18);
+}
+
+.jiniance-book.is-open{
+    animation:jiniance-page-turn 1.45s cubic-bezier(0.22, 0.85, 0.32, 1) forwards;
+}
+
+@keyframes jiniance-page-turn{
+    0%{
+        transform:perspective(1400px) rotateY(-86deg) scale(0.9);
+        opacity:0;
+        box-shadow:-16px 6px 0 rgba(0,0,0,0.22);
+    }
+    55%{
+        opacity:1;
+    }
+    100%{
+        transform:perspective(1400px) rotateY(0deg) scale(1);
+        opacity:1;
+        box-shadow:0 24px 48px rgba(0,0,0,0.32);
+    }
+}
+
+.jiniance-body{
+    position:absolute;
+    top:13.5%;
+    bottom:13.5%;
+    left:6.5%;
+    right:6.5%;
+    display:flex;
+    align-items:stretch;
+    gap:3.8%;
+}
+
+.jiniance-left{
+    width:48%;
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+}
+
+.jiniance-frame{
+    position:relative;
+    flex:1;
+    min-height:0;
+    overflow:hidden;
+    border-radius:16px;
+    background:rgba(255,252,240,0.22);
+}
+
+.jiniance-frame__border{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    pointer-events:none;
+    border-radius:16px;
+    border:5px dashed #b8861a;
+    box-shadow:
+        inset 0 0 0 2px rgba(255,248,220,0.88),
+        0 0 0 1px rgba(139,98,30,0.28);
+}
+
+.jiniance-frame__img{
+    position:relative;
+    z-index:1;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    border-radius:12px;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+}
+
+.jiniance-text{
+    width:48.2%;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:2px 6px 2px 10px;
+    scrollbar-width:thin;
+    scrollbar-color:#c9922a rgba(255,248,230,0.2);
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:21px;
+    line-height:2.05;
+    letter-spacing:1px;
+    color:#5c4018;
+    word-break:break-word;
+}
+
+.jiniance-text::-webkit-scrollbar{
+    width:8px;
+}
+
+.jiniance-text::-webkit-scrollbar-thumb{
+    background:repeating-linear-gradient(
+        180deg,
+        #c9922a 0 6px,
+        #a87415 6px 12px
+    );
+    border:2px solid #f5e6b8;
+}
+
+.jiniance-text__block{
+    margin-bottom:1.1em;
+}
+
+.jiniance-text__block:last-child{
+    margin-bottom:0;
+}
+
+.jiniance-close-btn{
+    position:absolute;
+    top:2.8%;
+    right:3.2%;
+    z-index:20;
+    width:36px;
+    height:36px;
+    border:3px solid #4a3220;
+    background:#fff5dc;
+    color:#5c4018;
+    font-size:22px;
+    line-height:1;
+    box-shadow:3px 3px 0 #2a1810;
+    transition:transform 0.15s steps(2);
+}
+
+.jiniance-close-btn:hover{
+    transform:translate(-1px,-1px);
+    box-shadow:4px 4px 0 #2a1810;
+}
+
+.jiniance-close-btn:focus-visible{
+    outline:2px solid #f59e0b;
+    outline-offset:2px;
+}
+
+.jiniance-exit-btn{
+    border:3px solid #4a3220;
+    background:#fff5dc;
+    color:#5c4018;
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:17px;
+    letter-spacing:2px;
+    padding:8px 22px;
+    box-shadow:4px 4px 0 #2a1810;
+    transition:transform 0.15s steps(2);
+}
+
+.jiniance-exit-btn:hover{
+    transform:translate(-1px,-1px);
+    box-shadow:5px 5px 0 #2a1810;
+}
+
+/* ===== 像素 UI 组件（奖状 / 抽人 / 分组） ===== */
+.pixel-panel{
+    position:relative;
+    display:inline-block;
+    image-rendering:pixelated;
+}
+
+.pixel-panel__shadow{
+    position:absolute;
+    inset:0;
+    background:#2a1810;
+    transform:translate(6px, 6px);
+    z-index:0;
+}
+
+.pixel-panel__body{
+    position:relative;
+    z-index:1;
+    background:#fff5dc;
+    border:4px solid #4a3220;
+    box-shadow:
+        inset 0 3px 0 0 #fffef5,
+        inset 0 -3px 0 0 #e8cf9a,
+        inset 3px 0 0 0 #ffecc8,
+        inset -3px 0 0 0 #d4b88a;
+}
+
+.pixel-btn{
+    border:4px solid #4a3220;
+    background:#fff5dc;
+    color:#3b2618;
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:17px;
+    letter-spacing:2px;
+    padding:10px 24px;
+    margin:8px;
+    box-shadow:4px 4px 0 #2a1810;
+    transition:transform 0.1s steps(2), box-shadow 0.1s steps(2);
+}
+
+.pixel-btn:hover{
+    transform:translate(-2px, -2px);
+    box-shadow:6px 6px 0 #2a1810;
+}
+
+.pixel-btn:active{
+    transform:translate(2px, 2px);
+    box-shadow:2px 2px 0 #2a1810;
+}
+
+.pixel-btn--gold{
+    background:#ffd875;
+    box-shadow:
+        inset 0 -3px 0 0 #e8a820,
+        inset 0 3px 0 0 #ffe8a0,
+        4px 4px 0 #2a1810;
+}
+
+.pixel-btn--gold:hover{
+    box-shadow:
+        inset 0 -3px 0 0 #e8a820,
+        inset 0 3px 0 0 #ffe8a0,
+        6px 6px 0 #2a1810;
+}
+
+.pixel-btn--lg{
+    font-size:19px;
+    padding:12px 34px;
+}
+
+.pixel-back-btn{
+    position:absolute;
+    top:22px;
+    left:22px;
+    z-index:20;
+    margin:0;
+}
+
+.pixel-page{
+    gap:0;
+    padding:20px;
+}
+
+
+
+/* —— 颁奖页滚动容器：用于解决大字体证书内容放不全 —— */
+#awardPage{
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:#c9922a rgba(255,245,220,0.25);
+}
+
+#awardPage::-webkit-scrollbar{
+    width:12px;
+}
+
+#awardPage::-webkit-scrollbar-track{
+    background:rgba(255,245,220,0.25);
+}
+
+#awardPage::-webkit-scrollbar-thumb{
+    background:repeating-linear-gradient(
+        180deg,
+        #c9922a 0 8px,
+        #a87415 8px 16px
+    );
+    border:3px solid rgba(255,245,220,0.72);
+}
+
+#awardPage .center-box{
+    position:relative;
+    inset:auto;
+    min-height:100vh;
+    height:auto;
+    justify-content:flex-start;
+    padding-top:72px;
+    padding-bottom:90px;
+    overflow:visible;
+}
+
+#awardPage .pixel-back-btn{
+    position:fixed;
+}
+
+/* —— 颁发奖状 —— */
+.pixel-award{
+    width:min(1100px,95vw);
+}
+
+.pixel-award__body{
+    padding:55px 50px 45px;
+    text-align:center;
+}
+
+.pixel-award__body::before{
+    content:"";
+    position:absolute;
+    inset:10px;
+    border:2px dashed #c9922a;
+    pointer-events:none;
+}
+
+.pixel-award__crest{
+    width:44px;
+    height:44px;
+    margin:0 auto 10px;
+    background:
+        linear-gradient(#ffd875 50%, #d97706 50%) center/100% 4px no-repeat,
+        linear-gradient(90deg, #ffd875 50%, #d97706 50%) center/4px 100% no-repeat,
+        #fff5dc;
+    border:3px solid #4a3220;
+    box-shadow:2px 2px 0 #2a1810;
+    transform:rotate(45deg);
+}
+
+.pixel-award__title{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:52px;
+    font-weight:normal;
+    color:#8b4513;
+    letter-spacing:8px;
+    margin-bottom:16px;
+}
+
+.pixel-award__divider{
+    height:4px;
+    margin:10px auto 18px;
+    max-width:260px;
+    background:repeating-linear-gradient(90deg, #c9922a 0 8px, transparent 8px 14px);
+}
+
+.pixel-award__name{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:82px;
+    font-weight:normal;
+    color:#b45309;
+    min-height:100px;
+    margin:24px 0;
+    letter-spacing:10px;
+    text-shadow:2px 2px 0 rgba(255,245,220,0.85);
+}
+
+.pixel-award.is-revealed .pixel-award__name{
+    animation:pixel-pop 0.5s steps(5);
+    color:#d97706;
+}
+
+@keyframes pixel-pop{
+    0%{ transform:scale(0.88); }
+    50%{ transform:scale(1.06); }
+    100%{ transform:scale(1); }
+}
+
+.pixel-award__desc{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:34px;
+    line-height:2.1;
+    color:#5c4018;
+    min-height:140px;
+    padding:0 20px;
+    opacity:0;
+    transform:translateY(8px);
+}
+
+.pixel-award.is-revealed .pixel-award__desc{
+    animation:pixel-fade-in 0.45s steps(4) 0.12s forwards;
+}
+
+@keyframes pixel-fade-in{
+    to{ opacity:1; transform:translateY(0); }
+}
+
+.pixel-award__actions{
+    margin-top:22px;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:2px;
+}
+
+
+.pixel-award__stage{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:32px;
+    letter-spacing:5px;
+    color:#8b6914;
+    margin-bottom:12px;
+}
+
+.pixel-award__clues{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+    margin:22px auto 18px;
+    max-width:900px;
+}
+
+.pixel-award__clue{
+    padding:18px 24px;
+    border:3px solid #4a3220;
+    background:rgba(255,248,230,0.82);
+    box-shadow:3px 3px 0 #2a1810;
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:30px;
+    line-height:2.1;
+    letter-spacing:1px;
+    color:#5c4018;
+    text-align:left;
+    opacity:0.55;
+    transition:opacity 0.18s steps(2), transform 0.18s steps(2), background 0.18s steps(2);
+}
+
+.pixel-award__clue:hover{
+    transform:translate(-2px, -2px);
+    box-shadow:5px 5px 0 #2a1810;
+    background:#fff1c2;
+}
+
+.pixel-award__clue.is-hidden{
+    color:#8b6914;
+    text-align:center;
+    letter-spacing:3px;
+}
+
+.pixel-award__clue.is-revealed{
+    opacity:1;
+    animation:pixel-clue-pop 0.35s steps(4);
+}
+
+@keyframes pixel-clue-pop{
+    0%{ transform:scale(0.96); }
+    60%{ transform:scale(1.03); }
+    100%{ transform:scale(1); }
+}
+
+/* —— 随机抽人 —— */
+.pixel-draw{
+    width:min(380px, 90vw);
+    margin-bottom:4px;
+}
+
+.pixel-draw__body{
+    padding:26px 22px 30px;
+    text-align:center;
+}
+
+.pixel-draw__label{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:15px;
+    letter-spacing:6px;
+    color:#8b6914;
+    margin-bottom:16px;
+}
+
+.pixel-draw__portrait{
+    position:relative;
+    width:136px;
+    height:136px;
+    margin:0 auto;
+}
+
+.pixel-draw__portrait img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    border:4px solid #4a3220;
+    background:#e8cf9a;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+}
+
+.pixel-draw__portrait-border{
+    position:absolute;
+    inset:-8px;
+    border:3px dashed #c9922a;
+    pointer-events:none;
+}
+
+.pixel-draw.is-rolling .pixel-draw__portrait{
+    animation:pixel-shake 0.1s steps(2) infinite;
+}
+
+@keyframes pixel-shake{
+    0%,100%{ transform:translateX(0); }
+    50%{ transform:translateX(-4px); }
+}
+
+.pixel-draw__name{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:26px;
+    font-weight:normal;
+    letter-spacing:4px;
+    color:#3b2618;
+    margin-top:20px;
+    min-height:38px;
+}
+
+.pixel-draw.is-rolling .pixel-draw__name{
+    animation:pixel-blink 0.15s steps(2) infinite;
+}
+
+@keyframes pixel-blink{
+    50%{ opacity:0.55; }
+}
+
+/* —— 随机分组 —— */
+.pixel-page--group{
+    justify-content:flex-start;
+    padding-top:72px;
+    overflow-y:auto;
+    gap:14px;
+}
+
+.pixel-group-grid{
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    justify-content:center;
+    width:100%;
+    max-width:960px;
+    padding:6px 16px 28px;
+}
+
+.pixel-group{
+    width:min(400px, 92vw);
+    flex:1 1 300px;
+}
+
+.pixel-group__body{
+    padding:18px 16px 14px;
+}
+
+.pixel-group__title{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:24px;
+    font-weight:normal;
+    letter-spacing:4px;
+    color:#8b4513;
+    text-align:center;
+    margin-bottom:14px;
+    padding:8px 8px 12px;
+    border-bottom:4px solid #4a3220;
+    background:linear-gradient(180deg, rgba(255,216,117,0.38) 0%, transparent 100%);
+}
+
+.pixel-group__list{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    min-height:120px;
+}
+
+.pixel-member{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:8px 10px;
+    background:rgba(255,248,230,0.72);
+    border:3px solid #4a3220;
+    box-shadow:2px 2px 0 #2a1810;
+    opacity:0;
+    transform:translateX(-10px);
+    animation:pixel-slide-in 0.35s steps(4) forwards;
+}
+
+@keyframes pixel-slide-in{
+    to{ opacity:1; transform:translateX(0); }
+}
+
+.pixel-member img{
+    width:44px;
+    height:44px;
+    object-fit:cover;
+    border:3px solid #4a3220;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+    flex-shrink:0;
+}
+
+.pixel-member span{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:18px;
+    letter-spacing:2px;
+    color:#3b2618;
+}
+
+.pixel-group__empty{
+    font-family:"汇文明朝体", "SimSun", serif;
+    font-size:16px;
+    letter-spacing:2px;
+    color:#8b6914;
+    text-align:center;
+    padding:28px 8px;
+    border:3px dashed #c9922a;
+    opacity:0.75;
+}
+
+.center-box{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    z-index:10;
+    color:white;
+}
+
+.title-text{
+    position:absolute;
+    top:35px;
+    left:50%;
+    transform:translateX(-50%);
+    color:white;
+    font-size:34px;
+    letter-spacing:4px;
+    text-shadow:0 5px 20px rgba(0,0,0,0.35);
+    z-index:20;
+}
+
+@media(max-width:768px){
+
+    .person-btn{
+        width:52px;
+        height:72px;
+    }
+
+    .pixel-name-tag__text{
+        font-size:16px;
+        letter-spacing:2px;
+    }
+
+    .pixel-name-tag__box{
+        min-width:72px;
+        padding:8px 12px 10px;
+    }
+
+    .title-text{
+        font-size:24px;
+    }
+
+    .pixel-award__name{
+        font-size:42px;
+        letter-spacing:4px;
+        min-height:58px;
+    }
+
+    .pixel-award__title{
+        font-size:30px;
+        letter-spacing:4px;
+    }
+
+    .pixel-award__stage{
+        font-size:22px;
+        letter-spacing:3px;
+    }
+
+    .pixel-award__clue{
+        font-size:20px;
+        line-height:1.9;
+        padding:12px 14px;
+    }
+
+    .pixel-award__desc{
+        font-size:22px;
+        min-height:90px;
+        padding:0 8px;
+    }
+
+    .pixel-draw__name{
+        font-size:22px;
+    }
+
+    .pixel-page--group{
+        padding-top:64px;
+    }
+
+    .jiniance-book{
+        width:min(96vw, 830px);
+    }
+
+    .jiniance-body{
+        top:15%;
+        bottom:15%;
+        left:5%;
+        right:5%;
+        flex-direction:column;
+        gap:10px;
+    }
+
+    .jiniance-left,
+    .jiniance-text{
+        width:100%;
+    }
+
+    .jiniance-left{
+        flex:0 0 auto;
+        min-height:38vh;
+    }
+
+    .jiniance-text{
+        flex:1;
+        min-height:100px;
+        max-height:26vh;
+        font-size:15px;
+        line-height:1.85;
+    }
+
+}
+
+/* 信纸页样式 */
+
+#letterPage .pixel-panel__body{
+    background: #fffdf0;
+    box-shadow: inset 0 0 80px rgba(139,69,19,0.08);
+}
+
+.letter-paper{
+    max-width: 780px;
+    margin: 0 auto;
+    font-family: "汇文明朝体", "SimSun", serif;
+    font-size: 23px;           /* 字体加大 */
+    line-height: 2.2;          /* 行距也稍作加大，更舒服 */
+    color: #3b2a1a;
+    text-align: justify;
+}
+
+.letter-paper p {
+    text-indent: 2em;          /* 每段开头空两个字符 */
+    margin-bottom: 1.1em;
+}
+
+.letter-paper p:last-child {
+    margin-bottom: 0;
+}
+
+.letter-header{
+    text-align: center;
+    margin-bottom: 2.8em;
+    color: #8b5a2b;
+    font-size: 25px;           /* 标题也稍稍加大 */
+    letter-spacing: 4px;
+}
+
+.letter-signature{
+    margin-top: 3.2em;
+    text-align: right;
+    color: #8b5a2b;
+    font-size: 22px;           /* 落款加大 */
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="home" class="page active">
+
+    <div class="bg-image"></div>
+
+    <!-- 12 人热区：悬停显示姓名，点击打开纪念册 -->
+    <div id="peopleLayer" class="people-layer"></div>
+
+    <div id="menu" class="side-menu">
+        <button class="menu-btn" onclick="showPage('awardPage')">颁发奖状</button>
+        <button class="menu-btn" onclick="showPage('randomPage')">随机抽人</button>
+        <button class="menu-btn" onclick="showPage('groupPage')">随机分组</button>
+        <button class="menu-btn" onclick="showPage('letterPage')" style="background:#ffe8b3; box-shadow:5px 5px 0 #2a1810;">爱你们的申老师</button>
+    </div>
+
+</div>
+
+<div id="awardPage" class="page">
+
+    <div class="bg-image blur-bg"></div>
+    <div class="overlay"></div>
+
+    <button type="button" class="pixel-btn pixel-back-btn" onclick="showPage('home')">← 返回首页</button>
+
+    <div class="center-box pixel-page">
+
+        <div id="awardCertificate" class="pixel-panel pixel-award">
+            <div class="pixel-panel__shadow" aria-hidden="true"></div>
+            <div class="pixel-panel__body pixel-award__body">
+
+                <div id="awardStage" class="pixel-award__stage">第一幕：破冰</div>
+                <div class="pixel-award__crest" aria-hidden="true"></div>
+
+                <h2 id="awardTitle" class="pixel-award__title">线索揭晓</h2>
+
+                <div id="awardClues" class="pixel-award__clues"></div>
+
+                <div class="pixel-award__divider" aria-hidden="true"></div>
+
+                <div id="awardName" class="pixel-award__name">？？？</div>
+                <div id="awardText" class="pixel-award__desc">点击线索，逐步揭晓答案</div>
+
+                <div class="pixel-award__actions">
+                    <button type="button" class="pixel-btn pixel-btn--gold" onclick="revealNextClue()">揭晓线索</button>
+                    <button type="button" class="pixel-btn" onclick="revealAward()">揭晓奖项</button>
+                    <button type="button" class="pixel-btn" onclick="nextAward()">下一张</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div id="randomPage" class="page">
+
+    <div class="bg-image blur-bg"></div>
+    <div class="overlay"></div>
+
+    <button type="button" class="pixel-btn pixel-back-btn" onclick="showPage('home')">← 返回首页</button>
+
+    <div class="center-box pixel-page">
+
+        <div id="randomCard" class="pixel-panel pixel-draw">
+            <div class="pixel-panel__shadow" aria-hidden="true"></div>
+            <div class="pixel-panel__body pixel-draw__body">
+                <div class="pixel-draw__label">命运之轮</div>
+                <div class="pixel-draw__portrait">
+                    <span class="pixel-draw__portrait-border" aria-hidden="true"></span>
+                    <img id="randomImg" src="https://picsum.photos/300?random=30" alt="抽中同学头像">
+                </div>
+                <h2 id="randomName" class="pixel-draw__name">点击开始抽人</h2>
+            </div>
+        </div>
+
+        <button type="button" class="pixel-btn pixel-btn--gold pixel-btn--lg" onclick="randomPick()">随机抽人</button>
+
+    </div>
+
+</div>
+
+<div id="groupPage" class="page">
+
+    <div class="bg-image blur-bg"></div>
+    <div class="overlay"></div>
+
+    <button type="button" class="pixel-btn pixel-back-btn" onclick="showPage('home')">← 返回首页</button>
+
+    <div class="center-box pixel-page pixel-page--group">
+
+        <button type="button" class="pixel-btn pixel-btn--gold" onclick="generateGroups()">开始分组</button>
+
+        <div class="pixel-group-grid">
+
+            <div class="pixel-panel pixel-group">
+                <div class="pixel-panel__shadow" aria-hidden="true"></div>
+                <div class="pixel-panel__body pixel-group__body">
+                    <h2 class="pixel-group__title">第一组</h2>
+                    <div id="group1" class="pixel-group__list">
+                        <div class="pixel-group__empty">点击上方按钮开始分组</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pixel-panel pixel-group">
+                <div class="pixel-panel__shadow" aria-hidden="true"></div>
+                <div class="pixel-panel__body pixel-group__body">
+                    <h2 class="pixel-group__title">第二组</h2>
+                    <div id="group2" class="pixel-group__list">
+                        <div class="pixel-group__empty">点击上方按钮开始分组</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 新增：申老师信纸页 -->
+<div id="letterPage" class="page">
+
+    <div class="bg-image blur-bg"></div>
+    <div class="overlay"></div>
+
+    <button type="button" class="pixel-btn pixel-back-btn" onclick="showPage('home')">← 返回首页</button>
+
+    <div class="center-box pixel-page" style="padding-top:80px; overflow-y:auto; max-height:100vh; justify-content:flex-start;">
+
+        <div class="pixel-panel" style="width:min(920px,94vw);">
+            <div class="pixel-panel__shadow" aria-hidden="true"></div>
+            <div class="pixel-panel__body" style="padding:65px 55px 70px; max-height:88vh; overflow-y:auto;">
+
+                <div id="letterContent" class="letter-paper">
+                    <!-- 
+                        在这里粘贴你的完整信件内容（支持很长的文本）
+                        示例结构：
+                        <div class="letter-header">致亲爱的阅微书社同学们</div>
+                        <p>正文第一段……</p>
+                        <p>正文第二段……</p>
+                        ...
+                        <div class="letter-signature">爱你们的申老师<br>2026年6月</div>
+                    -->
+                    <div class="letter-header">给阅微书社今年所有的毕业生们：</div>
+
+                    <p>  2026年是以生命中最珍贵的人离我而去开始的。我以为自己很坚强，也觉得已经没了什么遗憾，但是在不经意的每个瞬间，都会莫名其妙的泪流满面。时间总要继续，还好我有自己热爱的工作，还好身边一直有你们。</p>
+
+                    <p>  今年毕业的有两位阅微曾经的社长，沛东和一荃。</p>
+
+                    <p>  2018年沛东在阅微招新报名表里简单写着：没什么性格、什么也不会、社团经验为零，但喜欢的作家和书籍列了一堆......从大一到研三，沛东从数学跨专业到哲学，但始终留在了阅微。从读书会的主讲人和召集者、到编辑部挑大梁的写手、再到为社团豁出去演出各种角色的“咚咚咚”，你用了八年时光和阅微一起成长，也让阅微记住了你。</p>
+
+                    <p>  一荃，是雨青学姐口中的鬼马精灵，是阅微代言人“小微”、是“檀香”里的“马丽”、“藏经洞”中的王道士、“我与地坛”对所有人满怀善意的妹妹；也是“一期一赏”首期主持人，戏剧真图的导读，操办了无数次让大家印象深刻的内建活动，因为你，阅微走进大众的视线，成为了校园的一道靓丽风景。</p>
+
+                    <p>  和沛东、一荃同时出现在十佳舞台的，还有池池。现在我还记得第一次看见池池，是在布咖啡，透过窗户，看见一个姑娘蹦蹦跳跳从水面踏过石头无比轻盈，完全没有想到她后来的“分量”，十佳舞台，她是怒发冲冠的“刘邦”，是可爱的“黑衣宝宝”，而每次出现，即使传个话筒，也有着飒爽的英姿，她就是焦点。</p>
+
+                    <p>  能演戏的还有镇宇，通识大赛他勇闯密室难以逃脱，“美美与工”沉浸式演出，同一段台词重复N遍仍然满怀激情，“野葡萄”里演起“小惠爸爸”也是“爹味十足”。他从来都是可靠的伙伴，只要时间允许，从来不拒绝社团的每一次召唤。经常和镇宇同框的是浠帆，无论是参观校友会、换届大会、送别学长姐的毕业典礼，都会看到你们的身影。今年浠帆很“不幸”地“被空降”成为了编辑部负责人，既然无法摆脱，那么就继续发光发热吧。</p>
+
+                    <p>  离开珞珈，婧函在伤感之余，应该有一丝窃喜吧？终于把“烫手山芋”传给了浠帆。从大一开始写文案，婧函很快就进入了状态，成为了阅微有史以来文案“头部”，也成为了阅微的财务总监，管理着社团所有的开支，至今还无法卸任，就请站好最后一班岗吧。婧函很有钱的原因，很大一部分是小马能挣钱，自从掌舵秘书部，每一个社团文化节竞标，准备的材料都堪称教科书级，助力阅微“脱贫”的同时，还展示了社团实力。婧函和小马的同班同学还有雅宁，大一时她讲“欧维”让我泪流满面，第一次主持阅微讲堂又让我汗流浃背，然后就这么长大了，直到她每一次临场发挥都能带来惊喜，笔下的“小布”也成为我最喜欢的设计之一。和我一起见证她们成长的还有惠姐，她在阅微从博一坚持到了博五。无论是阅微讲堂的嘉宾还是大场导读，她始终是我的依靠，也是能分享无数八卦的朋友。</p>
+
+                    <p>  我们八卦过的，有过小陆，感觉像《情书》女主，充满了灵气。我们第一次同行，因为内建时发现买了同一场音乐会的票。有点小迷糊的小陆总是让老师同学们最喜欢、又有点小小担心的那一个。</p>
+
+                    <p>  最后是我最强大的“六边形”研究生助理竞莹和雅麟，你们同期入职，从研一到研三，无论是否在我身边，永远无所不能。竞莹优秀的文案和翻译，雅麟充满创意的设计和想法，你们为阅微，更为图书馆的阅读推广工作做出了杰出贡献。</p>
+
+                    <p>  再多不舍，也到了告别的时候，看着你们的成长，我又有着很多很多的欣喜。在今年十佳舞台上看到并肩而立的你们，我的眼中噙满泪水，是无数往事的回想，是无与伦比的骄傲与幸福。感谢你们和我共同度过的时光，感谢你们在阅微经历过的、尽力过的所有。读有故事的人，做有深度的书，未来期待着你们续写无数精彩的篇章。</p>
+
+                    <div class="letter-signature">爱你们的申老师<br>2026年6月</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<div id="modal" class="modal" onclick="handleModalBackdropClick(event)">
+
+    <div class="modal-stage" onclick="event.stopPropagation()">
+
+        <div id="jinianceBook" class="jiniance-book">
+
+            <button type="button" class="jiniance-close-btn" onclick="closeModal()" aria-label="退出纪念册">×</button>
+
+            <div class="jiniance-body">
+                <div class="jiniance-left">
+                    <div class="jiniance-frame">
+                        <span class="jiniance-frame__border" aria-hidden="true"></span>
+                        <img id="modalImg" class="jiniance-frame__img" src="" alt="个人图片">
+                    </div>
+                </div>
+                <div class="jiniance-text">
+                    <div id="modalText" class="jiniance-text__block"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <button type="button" class="jiniance-exit-btn" onclick="closeModal()">退出纪念册</button>
+
+    </div>
+
+</div>
+
+<script>
+
+/* =========================================================
+   学生数据接口区（后续维护重点）
+   ---------------------------------------------------------
+   可修改内容：
+   1. img              -> 首页/随机抽人头像
+   2. detailImg        -> 详情页图片
+   3. detailText       -> 详情页文字
+   4. x / y / row      -> 首页热区位置（row: front 前排坐姿 / back 后排站立）
+   5. award            -> 奖项名称
+   6. awardText        -> 颁奖词
+   ---------------------------------------------------------
+   图片建议：
+   - 本地路径：images/xxx.jpg
+   - 网络路径：https://xxx.jpg
+   ========================================================= */
+
+const students = [
+
+{
+    name:"韩雅宁",
+    short:"韩",
+    gender:"女",
+    // 奖项名称接口
+    award:"最佳温柔治愈奖",
+    // 颁奖词接口
+    awardText:"你总能在最平凡的时刻给予别人最坚定的温暖。未来很长，希望你的温柔永远有回应。",
+    text:"大学几年里，你始终像春日晚风一样温柔而坚定。谢谢你带来的陪伴、安慰与笑容，愿未来的你依旧自由闪耀，被世界温柔相待。",
+    // 首页头像接口
+    img:"hyn.png",
+    // 详情页图片接口
+    detailImg:"hyn.png",
+    // 详情页文字接口
+    detailText:"[李惠]\n\n雅宁，你好呀！一晃我们相识已经四年了。第一次见你主持，虽说还有些青涩，但眼里那份好学与灵气，我一直都记得。那会儿我也刚成为博士生不久，一边向往科研生活，一边也有些手足无措。\n之后我埋头忙课题，很少碰面，断断续续听说你远赴海外交换学习，忍不住感慨，你不仅能力出众，更是敢想敢做，特别厉害。\n时隔许久再见，我们都不再是当初初入武大的新人啦。在 213 的讨论会上，你的沉稳从容让我眼前一亮，后来万林的主持更是表现得游刃有余。看着你从当初略显腼腆的小姑娘，成长为如今独当一面的模样，打心底里替你高兴。\n往后的科研生活，愿你既有幸运相随，亦能把坎坷化作机遇，所有付出与成长皆有所值。\n\n[申婧函]\n\nto 雅宁：\n有很多想说的话其实已经跟你说啦，那就借着这个契机再回忆一下我们在社团的四年吧。从大一到大四，好多期真图都有我俩的身影。在台下，我目睹了导读雅宁由首次上台主持的紧张无措到后来沉稳自如地控场的蜕变，雅宁也见证了文案婧函由磨磨唧唧到快速出稿的成长。很幸运，我们一起来到了一个很棒的地方，变成了更优秀的人～而能在这里和你成为好朋友更是一件无比幸福的事。大学期间有太多难忘的时光都是和你一起度过的，我们一起写提纲、一起尝美食、一起在凌波门漫无目的地发呆，会在某些支撑不下去的时刻相互鼓励，也会在苦尽甘来的一瞬为彼此祝福。正像十佳答辩的剧本里所说的那样：因为一起努力，彼此撑腰，我们成了青春里最珍贵的伙伴！往后真的要天南海北各一方了，祝愿雅宁在新的天地里活得自在，玩得尽兴，如果有时感到烦恼，我随时愿意做你的倾听者～毕业快乐！！！",
+    // 前排左2 · 坐姿
+    x:"29%",
+    y:"55.5%",
+    row:"front"
+},
+
+{
+    name:"雷雅麟",
+    short:"雷",
+    // 奖项名称接口
+    award:"最佳气氛担当奖",
+    // 颁奖词接口
+    awardText:"有你的地方总不会冷场。愿你未来依旧热烈、鲜活，把青春的光一直带向更远的地方。",
+    text:"你总能轻易点燃身边人的情绪，把平淡的日子变得热闹又鲜活。愿未来的你继续奔跑，在更大的舞台上发光。",
+    // 首页头像接口
+    img:"lyl.png",
+    // 详情页图片接口
+    detailImg:"lyl.png",
+    // 详情页文字接口
+    detailText:"[牟昶璇]\n\nTo 雅麟：\n虽然我们至今没有在线下见过面，但你在我心里，早已是一个特别的存在。第一次从申老师那里听到你的名字，她说：“雅麟的工作能力很强，有事情交给她绝对放心。”从那之后，这句话就被我默默记在了心里。\n后来，我把共读打卡的系列海报交给你来做。知道你一直在腾讯，工作强度有多大，我大概能想象得到。所以每次交代任务，我都会反复叮嘱：如果时间不够，一定要告诉我，我来接手剩下的设计。我是真的担心你太累，怕你在忙碌的职场之余还要为这份“额外作业”透支自己。\n可是每一次，你都在ddl之前交出一份满分甚至超满分答卷。每一张海报都充满了风格和想法，看得我又惊喜又心疼。惊喜的是你的才华和用心，心疼的是你在深夜加完班后，也许还要对着屏幕打磨细节。谢谢你用行动证明了什么叫“可靠”，也谢谢你在那么忙的日子里，依然把这份交付当作重要的事来对待。\n未来的路还很长，愿你继续在腾讯发光发热，职场之路一帆风顺，去往你梦想中的更高处。而我也悄悄期盼着，有一天我们能在线下真正见面——不必为工作，只为亲口对你说一句：认识你，真好~\n毕业快乐，前程似锦！\n\牟牟老师\n\n[刘娅薇]\n\nTo雅麟姐姐：\n已经很久没有见到雅麟姐姐啦，由于联系一直在线上，原本就觉得你很厉害，这样神秘感加剧，不就更成了隐藏款宝藏嘛！\n我回看了一下我们的聊天记录，才发现第一次合作的工作就是24年为毕业生排版纪念册，现在又到了姐姐接收毕业纪念的时刻，但其实我对姐姐的初印象是韦敏老师那期真图的海报哦。当时觉得这位学姐的审美可好了，简洁但是又很精准地概括了信息，配色和图形都搭配很完美，隐隐约约窥见了姐姐实力的一角。\n等我进入研究生学习以后更多发现雅麟姐姐出现在学院的各种新闻里，又获得了什么奖啦，优秀经验分享啦，不由得和申老师某次干活时碎碎念的“我们雅麟做什么都能做好”相印证。\n和优秀的姐姐相处最先感受到的反而是亲切，说话声音温温柔柔的，怎么说呢，知道了雅麟姐姐的导师是强院长后就会觉得师门有气质的传承，是一种亲近但是又强大坚定的力量呢。\n还有一件我印象深刻的事情，今年过完年返工的时候，雅麟姐姐发了一条外婆的红包的视频，细腻的文字和缓慢的节奏一下子戳中我，让我想起来自己的家人，特别感动。\n虽然我一直以为姐姐的气质莫名很接近传统媒体啦，但是作为已经在腾讯打工了一年的新“老”员工，相信雅麟姐姐不管在什么行业都能收获满满，祝你未来一切顺利，不要太累了哦！\n娅薇\n2026年6月8日",
+    // 前排右3 · 坐姿
+    x:"60.5%",
+    y:"56%",
+    row:"front"
+},
+
+{
+    name:"池瑾",
+    short:"池",
+    // 奖项名称接口
+    award:"最佳理想主义奖",
+    // 颁奖词接口
+    awardText:"愿你始终保有热爱世界的能力，即使长大以后，也依旧拥有少年的浪漫与锋芒。",
+    text:"你身上总有一种安静而坚定的力量，对世界保留热爱，对未来充满期待。愿你永远清澈，也永远勇敢。",
+    // 首页头像接口
+    img:"cj.png",
+    // 详情页图片接口
+    detailImg:"cj.png",
+    // 详情页文字接口
+    detailText:"[刘娅薇]\n\n亲爱的池：\n围观池瑾的朋友圈小作文无数次，第一次正经给你写小作文还是第一次。\n书社并不是我们相遇的契机，于是我试着去回顾了一下初印象，想起来我俩最开始的聊天好像是支教前去机场拼车。当时你还是个萌萌的妹妹，问我“学姐我们到凌波门见吗”，没想过后来相处变成了现在这样令人摸不着头脑的模式。\n变成现在这种摸不着头脑的模式似乎起源于支教期间跟着你上课，你把小朋友们围成一圈，大家一起躺在地上听音乐，就这样放松下来，当时我想，啊和这种人相处的话满嘴跑火车也没什么的。当然这只是一个片段，总之我们的相处过程也是一步步放开自我的过程，线上聊天也好线下见面也好，还有看着你朋友圈的大段文字也好，你的表达使人愿意向你敞开。\n到了那年九月份你说要加入书社我还小小的震惊了一下来着，当时并不觉得我们在支教结束后会再有很多交集。不过后来看到你在书社内也交到了很多好朋友，从一开始比较模糊的对哲学感兴趣，到和沛东、小陆、镇宇他们相谈甚欢，后来去哲学院蹭了很多课……我为你找到这种不功利的、有兴趣的、且能深入学习的事情感到很高兴，也非常佩服你。\n包括你去学搏击也在一开始很有反差，没想到你的白白嫩嫩的手臂最后都变成紧实强壮的肌肉了！这些都是我“本以为”你不会去做的事情，可是你真的很棒！每一次尝试都逐渐变成了融于你内在的气质，一眼能为你提供向外的动力的泉，一程他人无法复刻的特别的路。\n虽然在社团里一起办活动的经历没有那么多，但是互联网上我们好像总在联系，或是说，有时候默默看到你在朋友圈发的内容，我也会想到很多。在重大决定面前你总是很坦诚，以一种半公开的形式来抒发自己的迷茫、喜怒，你的丰富的感情，你和主流不太一致的想法。很多人想过就悄悄地隐藏在心，而你却愿意整理成文字直白地展示。\n我想，你也一定生活在巨大的爱的体验里吧！事件流过你，而你强烈地表现出了它们的形状，一直在记录，一直在表达。那我祝你未来虽然不确定相伴，但总有能抵御迷茫的能量，总有接受并反馈情感的敏锐，祝你离开武大、离开阅微以后，也不断在阅书、阅人里找到自己的坐标。\n娅薇\n2026年6月8日\n\n[韩雅宁]\n\n你是娅薇姐姐带来的惊喜，是阅微的戏剧王牌。\n第一次听到池瑾的名字是从申老师的嘴里，申老师说，娅薇去支教认识了一个特别棒的姑娘，要加入我们社团。池瑾第一次具体来阅微参加的活动是什么时候我有点不记得了，对我而言，和池瑾的记忆最为深刻的是24年十佳评选。在排练的时候，我就因为剧本的抽象情节，担心表演效果会不会达到预期。等见到池瑾第一面，我所有的担心就烟消云散了，原来会演戏的人的肢体动作居然可以这么丰富。甚至我写的剧本还因为不够抽象，被一荃和池瑾改成了穿着黑色连体服来会扭的神奇剧情。两个黑衣人和沛东的反差，成为我印象最为深刻的一次十佳。这次之后，无论剧本写的多抽象，我都不再担心，因为池瑾总能用她的表演，接住每一个剧情。\n再之后在团建、朋友圈、课上逐渐认识到，池瑾的能力在各个点平均开花。有趣有梗，有学识有探索欲，有肌肉又浑身柔软…池瑾就是这样一个，集才华智慧有趣美貌于一身的女子。\n未来池瑾要去读书，我从来不会像担心自己的前程一样担心池瑾的未来。我觉得她会像一朵蒲公英一样，不论被吹到哪里的哪个缝隙，都会向下扎根，抽出新的果实，再飞向更远的蓝天。",
+    // 后排左2 · 站立
+    x:"33.5%",
+    y:"39.5%",
+    row:"back"
+},
+
+{
+    name:"李惠",
+    short:"李",
+    gender:"女",
+    // 奖项名称接口
+    award:"最佳陪伴奖",
+    // 颁奖词接口
+    awardText:"谢谢你出现在彼此最好的青春里。愿未来的每一天，都有人像你一样真诚地陪伴你。",
+    text:"那些一起熬夜、赶ddl、聊天散步的夜晚，会一直停留在记忆里。愿未来再忙，也别忘了照顾好自己。",
+    // 首页头像接口
+    img:"lh.png",
+    // 详情页图片接口
+    detailImg:"lh.png",
+    // 详情页文字接口
+    detailText:"[陈泽楷]\n\n自古生科多寂寥，我言李惠胜春朝。\n在生科院，做实验的人往往自带一种超脱尘世的疲惫感，淡淡的。李惠博士的创新点在于，她打破了学界共识，用颠覆性的方法证明了“高能量态生物样本”的存在，填补了我国在该领域的空白。\n李惠姐，谢谢你让我看到，即使面对科研长跑，生活依然可以像林间飞羽一样明媚和绚烂。你给我的激励，我会一直带在路上。\n蚊虫退退退，暴雨躲躲躲，好运连连连！祝最棒的李惠姐毕业快乐！一路666！\n写于2026.6.6星期六6时\n\n[韩雅宁]\n\n愿你乘风破浪，愿你永远赤诚，愿你，愿我永远的惠姐，一切都好。\n在阅微的学姐里，我和惠姐的缘分最深。我第一次上导读的嘉宾是惠姐，我最后一次上导读，又是惠姐临时来搭戏剧演员的空班。我还记得第一次见到惠姐，我很紧张，觉得无论是博士生还是青藏高原上的地山雀，都离我好远好远。惠姐就像大姐姐一样，一次次接住我的紧张。每当我卡住的时候，紧张地望向惠姐的方向，她总会笑意盈盈地看着我，替我接过本应该是我说出的串词。惠姐原本在我心里一直都是拥有甜甜的恋爱，追逐自己热爱的幸福姑娘。\n直到上次和惠姐一起从东湖走回学校，从她口里听到她云淡风轻地讲出一路上遇到的困难，才知道惠姐的笑意盈盈背后藏着多少力量。\n四年很长，长到头发剪短再一次次变长，也很短，短到惠姐的眼神里的少年情怀从始至终，从未改变。祝福惠姐，祝你毕业快乐，我会一直很爱很爱，像你永远笑眼看着我一样。",
+    // 前排中 · 坐姿
+    x:"50%",
+    y:"55.5%",
+    row:"front"
+},
+
+{
+    name:"陆钦文",
+    short:"陆",
+    // 奖项名称接口
+    award:"最佳成长突破奖",
+    // 颁奖词接口
+    awardText:"你一步一步把努力变成了答案。愿未来的你继续翻山越岭，抵达属于自己的辽阔天地。",
+    text:"你总是在不知不觉间完成成长，从青涩走向成熟。愿未来的每一步，都能坚定地朝着自己的方向前进。",
+    // 首页头像接口
+    img:"lqw.png",
+    // 详情页图片接口
+    detailImg:"lqw.png",
+    // 详情页文字接口
+    detailText:"[王淳]\n\n钦文：\n致以我们的三次元《情书》女主\n也是在2022年，大一的时候就认识了钦文，四年的时间匆匆而过，如今最大的感触是，渐渐有些明白，樊小纯的《借我》中，所描绘的是什么样子\n借我执拗如少年。\n借我后天长成的先天，\n借我变如不曾改变。\n借我可预知的险。\n世间容易让人感慨的事情有两种，不曾改变与沧海桑田，就像崔护看到门前的桃花依然在，就像桓温看到当年的小苗已成苍天大树，很久很久不见，发现面前的钦文一如当年，像橘子汽水，像情书和雪山，像梓慶削木做成的鐻，像牯岭街的少女少年。\n当然，上面这些都可以浓缩为如今最经典的那个词——少年感。坦白来说钦文的朋友圈真的是我死鱼一般的朋友圈里最有生命力的。\n所以我想真正的少年感是由内而外，发自真心的，一贯如此的。所谓星斗其文，赤子其人。不被外界的纷扰所影响，克尔凯郭尔也好，庄子也好，文心雕龙也好，世间的其他什么也好，希望你坚持自己喜欢的事，能顺从本心，就这样充实而有生命力的活下去。\n纯洁的马兰花，世人都想要看着它继续保持美丽。\n\n[池瑾]\n\n虽然和小陆其实交集不太多，而且在哲学课上碰见的次数比在社团里多，但是已经水灵灵被我纳入了人类样本…！感觉小陆就这样一直一本正经地读书、写字、走路，穿梭在众人之间，安静地想事情，偶尔傻笑一下，和一些别的我在哲院碰见的长发男略有相似之处但场景唯美很多（可能因为是不聒噪且无汗臭版，各种方面你比他们看上去体面很多啊…！）总之祝你永远有一个心灵或畅快、或平静的场所%，无论是一张书桌、音乐节、还是可爱的酒馆%，祝你在哪里都能找到令你满意的地方！",
+    // 前排左3 · 坐姿
+    x:"38.5%",
+    y:"56%",
+    row:"front"
+},
+
+{
+    name:"林浠帆",
+    short:"林",
+    // 奖项名称接口
+    award:"最佳自由灵魂奖",
+    // 颁奖词接口
+    awardText:"愿你永远不被定义，在热爱的方向里自由前行，把人生过成自己最喜欢的模样。",
+    text:"你身上总有一种自由而洒脱的气质，让人羡慕。愿未来的生活里，你依旧热爱风、热爱远方、热爱自己。",
+    // 首页头像接口
+    img:"lxf.png",
+    // 详情页图片接口
+    detailImg:"lxf.png",
+    // 详情页文字接口
+    detailText:"[熊杰]\n\n一转眼，你就在阅微待了四年了！想起四年前你来阅微面试，我在做前期准备的时候竟把你的名字写混了，不过没事，当时你肯定不知道是我不小心而为之，我因为有别的事你面试那次我不在场。在很多时候，我差不多忘了你是哪个部门的了，活动时候总能到场布置场地，但也没想到你是我们编辑部的，恭喜你还荣升了部长一职务。古文字是一个很小众的方向，也有着一些奇奇怪怪的八卦，和让人吐槽的管理方式，听你一讲，总让人大开眼界。虽然你比我小一届，但你的学术成果绝对是让人刮目相看的，论文，会议，项目数不胜数，有时候还会荣登学院公号，不能不让人感叹你这么能坐冷板凳。毕业了，去往新的学院，希望前程似锦，继续学术长虹。\n\n[林镇宇]\n\n致浠帆\n和稀饭的第一次相识应该是在22年的百团大战上，和这个不相熟的学弟一起逛一逛其他社团的摊位。然后，稀饭特别对简德协会感兴趣，那时我就有点好奇为什么会这样，因为简德协会对于大多数男生来说都是都是一种异质性的存在，所以一般我们都不会去关注这个协会，不过那时候也仅是泛泛而谈，并没有深入的讨论。\n我们真的相熟是在23年刚开学的，不知道为什么，这个几面之缘的学弟突然给我发了一个音乐会的通知，尽管如此，闲来无事，还是去了。而这也是我们友谊的开幕，但真的受不了声色污染呀（）于是，就好像打开了什么奇奇妙妙的大门，这个家伙，他又去约我去看什么展，看什么电影。哎，闲来无事，还是去了，也许是因为同样是半吊子的文青，半吊子的屌丝，于是我们便如此相处，一来一去，便是四年。\n就这样吧，悲春伤秋不是我的喜好。希望日后稀饭学业有成，我们还能有一起去图书馆看书的日子。\nyous 镇宇",
+    // 后排左1 · 站立
+    x:"23.5%",
+    y:"41%",
+    row:"back"
+},
+
+{
+    name:"马鑫",
+    short:"马",
+    // 奖项名称接口
+    award:"最佳靠谱队友奖",
+    // 颁奖词接口
+    awardText:"谢谢你在无数时刻的认真与担当。愿未来的你，始终值得被信赖，也值得被偏爱。",
+    text:"每次需要帮助时，你总会默默站出来。那些可靠和认真，早已成为大家记忆里最珍贵的部分。",
+    // 首页头像接口
+    img:"mx.png",
+    // 详情页图片接口
+    detailImg:"mx.png",
+    // 详情页文字接口
+    detailText:"[申婧函]\n\nto 马鑫：\n祝马鑫宝宝毕业快乐！！想来有一点遗憾，大四我们要忙碌的事情都太多，这一年好像很少有机会能和你面对面一起聊天了。但是每次回想起从前，我们顺利办完一场活动，又在夜色中慢悠悠地走回宿舍，都觉得那是很纯粹幸福的时光。那就再来说说我心里的你吧～我总觉得马鑫宝宝是一个极具反差萌的女孩子，外表如此呆萌可爱，内心里却翻腾着很多深邃的想法。非常喜欢在朋友圈里看你的一些碎碎念，其实很多时候也道出了我的心声。所以，十分期待你的更新！！！分别在即，我们都将奔赴新的天地，祝你吃好，睡好，玩好，遇到更多有趣的人，体验更精彩的人生。希望我们能再次相遇～\n\n[韩雅宁]\n\n看上去小小淡淡的你，藏着不为人知的力量。\n最开始认识马鑫不是在社团，而是在大一开学，我们是同班同学，甚至连寝室都是对门。不过最开始我们并没有熟络起来，我只是一直有个印象——对门寝室的同学好可爱。后来，我开始逐渐在社团活动的时候看到马鑫。刚开始我还非常紧张，有种表演才艺被亲戚发现的尴尬。甚至因为看见的次数太多，马鑫没来才会觉得奇怪。有一年招新，马鑫作为新生加入了社团，我没有觉得奇怪，因为阅微就是有这样一种力量——吸引所有同性相吸的人到来。马鑫就是这样一个姑娘，你一眼就能看出来她和陶醉在绩点和加分的游戏里的同学不同，有种遗世独立的超然感。其实在阅微的活动里，我和马鑫的交集并不多。我是台前的工作人员，她是幕后的秘书部负责人。但是每次在活动现场看到她，她都是勤恳负责的模样，一丝不苟地把交付给她的任务保质保量地完成好。马鑫总是这样勤勤恳恳，不知不觉里，我们的社团文化节中了三个标、十佳的申报文书也都已写好…你还没反应过来应该谢谢谁，社团的卡上就多了一笔又一笔钱。\n在社团工作之外，我也渐渐和马鑫熟悉起来，知道她来自西北，喜欢吃酸汤鱼。她的身上存在着无数个反差而成的张力，看她的外表，我会认为马鑫是一个江南姑娘。等到她开始做事，才发现雷厉风行，尽显西北女儿本色。她从来不会焦虑忧郁，哪怕摆在面前的道路很多，事情千头万绪。她总会像整理社团文书材料那样，一条条理出脉络，一件件慢慢做好。马上就要毕业了，我相信马鑫，来自西北的温婉姑娘，能在任何一处绽放自己的光芒。祝福你，祝你未来每一天都幸福，都可以眯眯笑，都有可以追逐的光。",
+    // 前排右2 · 坐姿
+    x:"70.5%",
+    y:"55.5%",
+    row:"front"
+},
+
+{
+    name:"申婧函",
+    short:"申",
+    gender:"女",
+    // 奖项名称接口
+    award:"最佳浪漫收藏家奖",
+    // 颁奖词接口
+    awardText:"愿你永远对生活充满感知力，把平凡日子里的小小浪漫一直认真收藏。",
+    text:"你总能发现生活里的细碎浪漫，把平凡的日子过得温柔又有光。愿未来的你始终拥有热爱生活的能力。",
+    // 首页头像接口
+    img:"sjh.png",
+    // 详情页图片接口
+    detailImg:"sjh.png",
+    // 详情页文字接口
+    detailText:"李惠\n你好呀，婧函，初次相见，便被你一身清雅的书卷气质打动，果然是文学院的小姐妹，沉静温婉，总能让人内心安然。大大小小的活动里，总能看到台侧你安静的身影，认真倾听、细致记录。无论是活动预告还是回顾推文，交到你手向来格外安心。落笔成文间字字妥帖，能用文字精准传递心意与想法，这般出众的文字功底，实在让人赞叹。\n恰逢毕业季，我们又有了更多相处的时光。褪去社团工作的身份，我见到了生活里开朗可爱的你。一同闲聊校园趣事，畅谈日常点滴，也会伴着憧憬与忐忑，聊聊前路的学习与生活。\n何其有幸，一路与你相伴。由衷欣赏认真纯粹、温柔美好的你。愿你即将开启的硕士生涯顺遂无忧，继续以笔墨书写热爱，在新的旅程里收获成长与欢喜，前路皆是风景。\n马鑫\n当初开学在军训场上初步接触就拜倒在婧函的亲和力下，后来进入书社，又发现你的文章也是笔力十足，所以如果要我用一个词来形容你，就是“文质彬彬”啦。这样的你，无论选择哪一条道路，都会走出自己的步伐，都会被看见。那就快乐地努力奔跑吧，加油加油~",
+    // 前排右1 · 坐姿
+    x:"80%",
+    y:"57%",
+    row:"front"
+},
+
+{
+    name:"王一荃",
+    short:"王",
+    // 奖项名称接口
+    award:"最佳未来潜力奖",
+    // 颁奖词接口
+    awardText:"愿你始终坚定地向前走。那些今天的努力，终将在未来某一天闪闪发光。",
+    text:"你总是 quietly 努力，却又在关键时刻惊艳所有人。愿未来的道路上，你依旧坚定、自信而闪耀。",
+    // 首页头像接口
+    img:"wyq.png",
+    // 详情页图片接口
+    detailImg:"wyq.png",
+    // 详情页文字接口
+    detailText:"[刘娅薇]\n\n致爱看绘本的小王子：\n一荃，今年轮到我给你写寄语啦！\n印象里的一荃一直是一个不会被世俗攻击到的女孩子。和你的公众号一样，生活是一本巨大的绘本，你像小王子一样全心全意守护着心里的那朵珍贵的花。\n我常常会为你的下一个决定感到惊讶。去澳门、去台湾、去香港，你的足迹越来越远，你的朋友遍布天南海北；你在阅微与真人图书对话，又在珈一做心理疗愈的尝试，向外向内都积极地探索。\n我想用奇妙来形容你，去年收到你的寄语后还来不及有毕业的感动就两人高密度成为上班搭子，还有我们的丁宁小朋友一起，三人每天早八在公交站一起等车，中午密谋点餐，然后在熄灯的工位四处游荡，疲惫但同时也散漫地度过实习时光，在长少社一起读了很多写给小朋友的书。\n去年这时候的一荃还是一个刚刚经历离合悲欢的人呢，一边叹气一边又很开心地和我分享你在台湾的际遇，不知道过去一年，现在的你有没有新的进展。我认为这样愿意走进他人内心的人，不管遇到谁都能收获感动、收获真挚的情谊噢，所以我也一直很期待你和我分享新的有关相遇的故事。\n好像生活总会恰到好处地向你展开画卷，你也总能幸福地接受生活给予你的新挑战，就像你说很凑巧地开始实习，凑巧地和夏语一起申请研究生，凑巧地收到港中文offer，一连串连锁反应一般，说不定下一阶段又会衔接上什么有趣的事情。\n你的下一本小册子里一定不会缺少故事的！也一定不会缺少留言条的！就这样一直相遇且珍重吧，小王子的记事本要变得越来越厚，公众号写得长长长长，祝你总能遇见美好，也相信你冥冥之中的预感，我们在未来会再相逢！\n对了！另外说一句，因为有预感申老师可能又要让我们当众念出来寄语，所以我一定要分享我知道一荃有双胞胎姐妹的震惊！我敢肯定社团大部分人都不知道这件事啊啊啊啊啊啊啊！！！\n娅薇\n2026年6月8日\n\n[池瑾]\n\n虽然见面的次数也不是很多，但每次见到你你总是看起来不是在笑就是在憋笑，给人生活很叫人欣慰之感…！后来在一人一剧场的分享里见到你表演，在puq看到你跟着音乐随性跳舞，感觉你总是在干自己认为开心、有意义的事情，感觉你理所应当去到自由、浪漫的地方去。肉麻话不能再多说了，祝你毕业快乐。祝未来的困难都轻轻地过去，祝你开心的日子总是很多。",
+    // 后排右1 · 站立
+    x:"65%",
+    y:"41%",
+    row:"back"
+},
+
+{
+    name:"郭竞莹",
+    short:"郭",
+    // 奖项名称接口
+    award:"最佳微笑感染力奖",
+    // 颁奖词接口
+    awardText:"你的笑容曾照亮很多普通日子。愿未来也总有人因你的存在而感到幸福。",
+    text:"你总能把快乐传递给身边的人，那些明亮的笑容，会一直留在大家关于青春的记忆里。",
+    // 首页头像接口
+    img:"gjy.png",
+    // 详情页图片接口
+    detailImg:"gjy.png",
+    // 详情页文字接口
+    detailText:"[丁宁]\n\n亲爱的竞莹姐姐，实在难以接受我们马上就要挥手道别，初次碰面的场景清晰得仿佛就在昨日，时光匆匆，离别却猝不及防。我一直下意识躲避谈论离别，深知这个字眼裹挟着太多难过，所以人前故作开朗，笑着目送你奔赴崭新人生，衷心祈愿你的未来一路顺遂，万事幸运常伴。只是藏在笑意背后的不舍无从言说，大概要历经漫长时日，才能慢慢接受分开的事实。但山水有来路，早晚复相逢，还是祝福你永远平安喜乐，事事顺心。我真的很喜欢和你在一起的时光，所以也希望我喜欢的人能一直幸福◍˃ᵕ˂◍。\n\n[牟昶璇]\n\nTo竞莹：\n提起你，我脑海中浮现的第一个画面，是一个安静清冷的女孩，却藏着一身的才华与温柔。那是我对你的第一印象——有点遥远的美好，像一首读不倦的诗。\n后来，我们一起走过很多小小的时刻：跨年夜，你牵着小布，和我们一起挨个给大家发礼物，灯光下你的笑容暖暖的；在真图，我们一起搬椅子，忙忙碌碌中你从不多话，却总是默默把活干得妥帖；在申老师家，大家围坐在一起吃饭，聊着天南海北的事。这些细碎的片段，拼成了一个真实的你——从容淡定、有自己的节奏和力量。\n毕业了，由衷地希望你在未来的日子里，事业闪闪发光，生活有滋有味。但最最重要的是：再忙也要好好吃饭、好好休息，身体健康永远是第一位！\n愿你前程似锦，毕业快乐！\n牟牟老师",
+    // 前排左1 · 坐姿
+    x:"17.5%",
+    y:"57%",
+    row:"front"
+},
+
+{
+    name:"林镇宇",
+    short:"林",
+    // 奖项名称接口
+    award:"最佳沉稳力量奖",
+    // 颁奖词接口
+    awardText:"愿你继续带着冷静与坚定前行，在未来的世界里，成为真正闪耀而可靠的大人。",
+    text:"你总是沉稳而有力量，让人感到安心。愿未来的你继续保持内心的坚定，从容地面对世界。",
+    // 首页头像接口
+    img:"lzy.png",
+    // 详情页图片接口
+    detailImg:"lzy.png",
+    // 详情页文字接口
+    detailText:"[林浠帆]\n\n给林镇宇的毕业寄语：\n首先毕业快乐~读了五年本科也是该毕业了哈哈~谢谢你陪我看了那么多场电影，以后就不能随便找你陪我看电影了，真是遗憾啊。祝你明年能顺利上岸，好好读哲学，研究生再快乐三年~祝你能将来快乐地追逐自己的理想，能做自己想做的事~多看书，多写点小说，多打打游戏，毕竟要是年龄一上来对这些事情都会逐渐兴趣缺缺，趁还年轻多玩玩~希望你往后的日子里不再头痛，身体健康，别再吓人了好吗？有空就回武汉，再一起干饭，去吃大盘鸡和玛莎拉印巴自助吧~最后祝你减肥成功，武汉的风水养人，希望多年积累的脂肪能早日从你身上下去~最后祝纯爱战士也有自己的春天！\n\n[郭嘉豪]\n\n五年以后，当我看着空白的文档不知道如何讲述我和镇宇的故事时，准会想起我和镇宇去参加阅微面试的那个遥远的下午。当时，阅微是一个看似读书的寻常社团，一个个成员都满腹经纶谈吐不凡，顺着众人的眼光看去，是我们笑颜如花，心比观世音菩萨还善良三分的申老师。\n那天面试我来的迟了些，但幸好没有错过认识镇宇的机会，那晚我们直接也从太阳落下聊到了太阳重新升起，惊讶地发现我们不但是老乡，是阅微的一份子，是大一新生，还住一栋楼，宿舍近的我跺跺脚他估计就睡不着。当时很想有一个哆啦A梦的通行圈，放在脚下再跳进去估计能正好跟镇宇来个面对面零距离。我们也都是高中理科，怀抱着读个文科混混过上幸福本科生活的理想一块来到了湖滨，镇宇故作神秘地说他是凉州同贡士出身多少名，师从天水姜伯约，还是生科竞赛一等奖差点入选国家队的绝顶高手，我说那你可真是真可惜现在只能跟我玩到一块了，镇宇风轻云淡地说到“往日种种，不过过往云烟罢了”，我们当时都是做题做傻了的小镇青年，犯过很多浑，做过不少傻事闹笑话，本着同类相吸的原则，就这样开始了我们在阅微的时间。\n在阅微搬桌子的那些年，我们总相互吐槽，我说等你肚子有我这番大的时候，便不会觉得这桌子值几斤重了，幸好这一天来的不算晚，如果镇宇愿意在纪念册上放上自己大一夏天我们为社团演出时的照片，大家会发现照片里那个清秀纤长的小男孩如今已亭亭如盖，我们的发福都发生在那个夏天，这些年每次社团聚餐大家互诉衷肠口吐趣事的时候，我两是一直口不能停、一扫而光，化身史前巨兽为冬眠储存过冬能量，同时还会口口宣称这是为了节约粮食的环保政策，不能浪费社团的每一粒关爱。我们这两个不善言辞的家伙只能以这样的方式为社团尽一份力。\n现在也到镇宇毕业的时候了，这么些年参加的真人图书活动大大小小，都会凝结成珍贵的回忆存在于你的脑海里吧，我们的本科生活也随着阅微的毕业晚会要结束了，日后回想在武大的生活，可能除了阅微，还能说的也不算多了，憋住你的泪水别滴在蛋糕上了，就算想哭也没我的坚实的臂膀了。\n虽然还有千言万语，但一想到和你的分别，便再难说出口，不自禁放任了痛楚在脑海里汹涌，但我还是强忍着要说一句，“毕业快乐，镇宇~”，愿此行，终抵群星。",
+    // 后排中 · 站立
+    x:"43.5%",
+    y:"38.5%",
+    row:"back"
+},
+
+{
+    name:"李沛东",
+    short:"李",
+    // 奖项名称接口
+    award:"最佳热血青春奖",
+    // 颁奖词接口
+    awardText:"愿你永远保持少年般的热血与勇气，在属于自己的路上一路狂奔、永不停歇。",
+    text:"你像一团炽热的火焰，把青春燃烧得鲜活而耀眼。愿未来无论走到哪里，都依旧敢想敢闯。",
+    // 首页头像接口
+    img:"lpd.png",
+    // 详情页图片接口
+    detailImg:"lpd.png",
+    // 详情页文字接口
+    detailText:"[田华]\n\n从同级变成学弟的沛东要毕业了！虽然一次也没喊过我学长，因为你一直叫我华哥（哈哈哈地笑）。\n感谢沛东为我写的本科毕业寄语，今天我依然珍藏着，时时翻看。又看到我给你写的本科毕业寄语，写得真好啊！现在我可能写不出那样的文字了，一是因为我已“江郎才尽”，二是因为我们缺少了共同的生活轨迹。\n或许古人很早就想明白了这个问题，王勃写下“海内存知己，天涯若比邻”是在宽慰友人“友情能跨越山海，相隔天涯也像咫尺近邻”，或许他心里也知道这不过是用奢望来对抗现实，说出来、写下来让自己也相信友情不会因山海阻隔和时间流逝而变弱变淡。既然如此我也要相信并许愿，许愿“相知无远近”，许愿“万里尚为邻”，许愿“故交在天末”，许愿“心知复千里”。\n北京的夏夜很凉爽，让我能安稳地回忆过去，想起我们在胖哥吃的饺子，在它山喝的茶，在KTV唱的歌，“从前共你，促膝把酒，倾通宵都不够”，现在却很难如此，只能寄希望于未来的某一天我们在北京或深圳，再坐到一起聊聊天。\n毕业季真坏，让每个人面临离别，无论是马上从珞珈山启程的你和在座的各位朋友，还是一直在珞珈山的申老师，抑或是已经离开珞珈山的我。\n毕业季真好，好到一个人可以尽情畅想崭新的未来。沛东你要去深圳工作了，我祝你，也要祝申老师，祝在座的诸位，“但无事，身强健”，祝“今年见，明年重见，春色如人面”，祝“乐事生平佔，天从人愿”！\n沛东，给你的毕业寄语就要结尾了，你会不会含着泪站起来为我的寄语鼓掌，建议你这么做，因为再难有我写给你的毕业寄语了（哭）。\n2026年6月8日夜\n华哥\n\n[王一荃]\n\n沛东：\n沛东沛东，居然轮到我给你写毕业寄语了哈哈哈哈！完全没想到我们两个居然是一起毕业！\n对你的第一印象是我们一起演《檀香》的舞台剧，那个时候觉得你人蛮好的被拉过来友情出演哈哈哈哈～\n后来又一起搞了很多活动一起演过很多戏，除了觉得你献身很多以外（），也发现了你很多有趣可爱的一面，害羞的时候会把眼睛垂下去😌😌\n知道你会混得很好，所以我对你一直很放心hh 最后祝你毕业快乐！一切顺利！我们说不定可以在以后各大南北的阅微聚会上再次相遇演戏哈哈哈哈哈！\n一荃\n2026.6.7",
+    // 后排右2 · 站立
+    x:"55%",
+    y:"39.5%",
+    row:"back"
+}
+
+];
+
+/** 全局水平微调（%）：整体偏左则增大，偏右则减小 */
+const HOTSPOT_X_OFFSET = 0;
+
+const peopleLayer = document.getElementById("peopleLayer");
+
+students.forEach((s,index)=>{
+
+    const btn = document.createElement("button");
+
+    btn.type = "button";
+    btn.className = "person-btn " + (s.row === "back" ? "person-btn--back" : "person-btn--front");
+    btn.style.left = `calc(${s.x} + ${HOTSPOT_X_OFFSET}%)`;
+    btn.style.top = s.y;
+    btn.setAttribute("aria-label", s.name + " 的纪念册");
+
+    const tag = document.createElement("span");
+    tag.className = "pixel-name-tag";
+    tag.setAttribute("role", "tooltip");
+
+    const wrap = document.createElement("span");
+    wrap.className = "pixel-name-tag__wrap";
+
+    const shadow = document.createElement("span");
+    shadow.className = "pixel-name-tag__shadow";
+    shadow.setAttribute("aria-hidden", "true");
+
+    const box = document.createElement("span");
+    box.className = "pixel-name-tag__box";
+
+    const text = document.createElement("span");
+    text.className = "pixel-name-tag__text";
+    text.textContent = s.name;
+
+    box.appendChild(text);
+    wrap.appendChild(shadow);
+    wrap.appendChild(box);
+    tag.appendChild(wrap);
+    btn.appendChild(tag);
+
+    btn.addEventListener("click", ()=>openModal(index));
+
+    peopleLayer.appendChild(btn);
+
+});
+
+/* =====================================================
+   点击首页头像 -> 打开详情页
+   ===================================================== */
+
+function openModal(index){
+
+    const s = students[index];
+    const book = document.getElementById("jinianceBook");
+    const textPanel = document.querySelector(".jiniance-text");
+
+    document.getElementById("modal").style.display="flex";
+    document.body.style.overflow="hidden";
+
+    document.getElementById("modalImg").src = s.detailImg;
+
+    document.getElementById("modalText").innerText = s.detailText;
+
+    if(textPanel) textPanel.scrollTop = 0;
+
+    book.classList.remove("is-open");
+    void book.offsetWidth;
+    book.classList.add("is-open");
+
+}
+
+function closeModal(){
+    const modal = document.getElementById("modal");
+    const book = document.getElementById("jinianceBook");
+    if(modal.style.display !== "flex") return;
+    book.classList.remove("is-open");
+    modal.style.display="none";
+    document.body.style.overflow="hidden";
+}
+
+function handleModalBackdropClick(event){
+    if(event.target === event.currentTarget){
+        closeModal();
+    }
+}
+
+document.addEventListener("keydown",(event)=>{
+    if(event.key === "Escape"){
+        closeModal();
+    }
+});
+
+document.addEventListener("mousemove",(e)=>{
+
+    if(window.innerWidth - e.clientX < 80){
+        document.getElementById("menu").classList.add("show");
+    }else{
+        document.getElementById("menu").classList.remove("show");
+    }
+
+});
+
+function showPage(id){
+
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+
+    document.getElementById(id).classList.add("active");
+
+}
+
+/* =====================================================
+   奖状系统：点击线索 -> 逐步揭晓 -> 最终揭晓奖项
+   -----------------------------------------------------
+   说明：
+   1. 不改动 students 原有接口
+   2. 单独使用 awardScripts 存放本次证书线索与奖项
+   3. revealNextClue() -> 按顺序揭晓线索
+   4. revealAward()    -> 直接揭晓最终奖项
+   5. nextAward()      -> 下一张证书
+   ===================================================== */
+
+const awardScripts = [
+    {
+        stage:"第一幕：破冰",
+        name:"池瑾",
+        clues:[
+            "每一次登台都是毫无预警的演技大爆发，话剧达人",
+            "敏锐地记述着生活的点滴、思绪的流动，用一片赤诚感受生命"
+        ],
+        award:"享受舞台的生活艺术家"
+    },
+    {
+        stage:"第一幕：破冰",
+        name:"林镇宇",
+        clues:[
+            "来自秘书部，不定期刷新在社团活动中",
+            "把哲学的力量化作羽翼，飞出尘笼，飞向更广阔的天地"
+        ],
+        award:"哲思世界里的飞行家"
+    },
+    {
+        stage:"第一幕：破冰",
+        name:"林浠帆",
+        clues:[
+            "阅读面广泛，在大家追逐新科技之时，他独自走向冷门绝学",
+            "静水流深，扎根古文字的天地，播下学术的种子"
+        ],
+        award:"厚积薄发的绝学传承人"
+    },
+    {
+        stage:"第二幕：幕后",
+        name:"马鑫",
+        clues:[
+            "她的故乡没有海，却藏着一片名叫“海子”的水",
+            "看起来是最乖巧的小鱼，圆眼睛，慢吞吞，写竞标书的时候才知道——她会飞"
+        ],
+        award:"海子里的飞鱼"
+    },
+    {
+        stage:"第二幕：幕后",
+        name:"韩雅宁",
+        clues:[
+            "在舞台上，她是童话里走出来的公主",
+            "但公主从来不等人来拯救，她骑上马，勋章在路上"
+        ],
+        award:"是公主是骑士"
+    },
+    {
+        stage:"第二幕：幕后",
+        name:"郭竞莹",
+        clues:[
+            "隐幕于图书馆公众号的方寸之间，用一篇篇高质量推文撑起了全社对外的官方排面。",
+            "安静地在各个活动中陪伴大家，即将结束硕士生涯，创造自己的事业"
+        ],
+        award:"落笔生花的文学精灵"
+    },
+    {
+        stage:"第二幕：幕后",
+        name:"陆钦文",
+        clues:[
+            "可以经常在哲学院偶遇",
+            "在繁杂的现实里，始终在默默构筑着充盈的精神世界。"
+        ],
+        award:"理想国的国王"
+    },
+    {
+        stage:"第二幕：幕后",
+        name:"雷雅麟",
+        clues:[
+            "是阅微的视觉总监，也是奋战在大厂的高能少女",
+            "亲切又强大的“定心丸”"
+        ],
+        award:"代表月亮一往无前的六边形战士"
+    },
+    {
+        stage:"第二幕：幕后",
+        name:"申婧函",
+        clues:[
+            "编辑部掌门人，掌控着全社最高的文字风控。",
+            "文如其人，沉稳自如，认真而温柔地面对生活"
+        ],
+        award:"谦谦君子，文质彬彬"
+    },
+    {
+        stage:"第三幕：情怀",
+        name:"李惠",
+        clues:[
+            "有一个概念叫“Highly-Expressed”，形容分子的活跃表达",
+            "是导读部从容优雅的主持人，也是在大大小小的活动里陪伴大家的温暖姐姐",
+            "面对生活，有爱，有包容，更有坚强与勇敢"
+        ],
+        award:"Hui-ly-Expressed Factor（高表达因子）"
+    },
+    {
+        stage:"第三幕：情怀",
+        name:"王一荃",
+        clues:[
+            "24-25年她把阅微星球变成了游乐场，夜夜亮着灯",
+            "她的心里有狐狸、玫瑰，和所有需要用心才能看到的东西"
+        ],
+        award:"B612星球长"
+    },
+    {
+        stage:"第三幕：情怀",
+        name:"李沛东",
+        clues:[
+            "和惠姐一样陪伴大家很久",
+            "他沉着安静，也是从零到一举办一次次活动的创造者"
+        ],
+        award:"阅微终身荣誉院士"
+    }
+];
+
+let awardIndex = 0;
+let clueIndex = 0;
+
+function renderAward(){
+
+    const item = awardScripts[awardIndex];
+
+    document.getElementById("awardStage").innerText = item.stage;
+    document.getElementById("awardTitle").innerText = "奖状揭晓";
+    document.getElementById("awardName").innerText = "？？？";
+    document.getElementById("awardText").innerText = "点击线索，逐步揭晓答案";
+
+    const clueBox = document.getElementById("awardClues");
+    clueBox.innerHTML = "";
+
+    item.clues.forEach((clue, index)=>{
+        const div = document.createElement("div");
+        div.className = "pixel-award__clue is-hidden";
+        div.innerText = "核心线索 " + (index + 1);
+        div.onclick = ()=>revealSpecificClue(index);
+        clueBox.appendChild(div);
+    });
+
+    clueIndex = 0;
+    document.getElementById("awardCertificate").classList.remove("is-revealed");
+
+}
+
+function revealSpecificClue(index){
+
+    const item = awardScripts[awardIndex];
+    const clues = document.querySelectorAll(".pixel-award__clue");
+
+    if(!clues[index]){
+        return;
+    }
+
+    clues[index].innerText = item.clues[index];
+    clues[index].classList.remove("is-hidden");
+    clues[index].classList.add("is-revealed");
+
+    clueIndex = Math.max(clueIndex, index + 1);
+
+}
+
+function revealNextClue(){
+
+    const item = awardScripts[awardIndex];
+
+    if(clueIndex < item.clues.length){
+        revealSpecificClue(clueIndex);
+    }else{
+        revealAward();
+    }
+
+}
+
+function revealAward(){
+
+    const item = awardScripts[awardIndex];
+
+    item.clues.forEach((clue, index)=>{
+        revealSpecificClue(index);
+    });
+
+    document.getElementById("awardTitle").innerText = item.award;
+    document.getElementById("awardName").innerText = item.name;
+    document.getElementById("awardText").innerText = "获奖证书：" + item.award;
+
+    document.getElementById("awardCertificate").classList.add("is-revealed");
+
+}
+
+function nextAward(){
+
+    awardIndex++;
+
+    if(awardIndex >= awardScripts.length){
+        awardIndex = 0;
+    }
+
+    renderAward();
+
+}
+
+renderAward();
+
+function randomPick(){
+
+    const card = document.getElementById("randomCard");
+
+    card.classList.add("is-rolling");
+
+    let count = 0;
+
+    const interval = setInterval(()=>{
+
+        const idx = Math.floor(Math.random()*students.length);
+
+        const s = students[idx];
+
+        document.getElementById("randomImg").src = s.img;
+
+        document.getElementById("randomName").innerText = s.name;
+
+        count++;
+
+        if(count > 18){
+
+            clearInterval(interval);
+            card.classList.remove("is-rolling");
+
+        }
+
+    },100);
+
+}
+
+function shuffle(arr){
+
+    return arr.sort(()=>Math.random()-0.5);
+
+}
+
+/* =====================================================
+   随机分组系统
+   -----------------------------------------------------
+   原 12 人 + 分组额外 8 人
+   仅用于随机分组，不影响首页 / 纪念册 / 奖状 / 随机抽人
+   ===================================================== */
+
+// 分组额外人员接口区
+const groupExtraStudents = [
+    { name:"秦曼斐", img:"qmf.png" },
+    { name:"刘娅薇", img:"lyw.png" },
+    { name:"李依文", img:"lyw2.png" },
+    { name:"李姝颖", img:"lsy.png" },
+    { name:"张宪国", img:"zxg.png" },
+    { name:"龚汉文", img:"ghw.png" },
+    { name:"王淳", img:"wc.png" },
+    { name:"袁康哲", img:"ykz.png" }
+];
+
+function generateGroups(){
+
+    const groupStudents = students.map(s => ({
+        name: s.name,
+        img: s.img
+    })).concat(groupExtraStudents);
+
+    const arr = shuffle([...groupStudents]);
+
+    const g1 = arr.slice(0,10);
+    const g2 = arr.slice(10,20);
+
+    document.getElementById("group1").innerHTML = "";
+    document.getElementById("group2").innerHTML = "";
+
+    g1.forEach((s, i)=>{
+        document.getElementById("group1").innerHTML += `
+            <div class="pixel-member" style="animation-delay:${i * 0.08}s">
+                <img src="${s.img}" alt="${s.name}">
+                <span>${s.name}</span>
+            </div>
+        `;
+    });
+
+    g2.forEach((s, i)=>{
+        document.getElementById("group2").innerHTML += `
+            <div class="pixel-member" style="animation-delay:${i * 0.08}s">
+                <img src="${s.img}" alt="${s.name}">
+                <span>${s.name}</span>
+            </div>
+        `;
+    });
+
+}
+
+</script>
+
+</body>
+</html>

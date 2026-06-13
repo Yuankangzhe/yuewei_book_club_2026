@@ -1,0 +1,11 @@
+Cursor assets used in this project (CC0 — free for commercial use):
+
+1. Default arrow — Kenney « Cursor Pixel Pack »
+   https://kenney.nl/assets/cursor-pixel-pack
+   File: pixel-cursor.png (from tile_0046, scaled 2×)
+
+2. Pointer hand — OpenGameArt « Hand cursor » by yd
+   https://opengameart.org/content/hand-cursor
+   File: pixel-cursor-pointer.png
+
+Attribution appreciated but not required.
